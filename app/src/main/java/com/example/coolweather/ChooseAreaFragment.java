@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,8 +41,9 @@ public class ChooseAreaFragment extends Fragment {
     public static final int LEVEL_COUNTY = 2;
 
     private ProgressDialog progressDialog;
+
     private TextView titleText;
-    private Button backbutton;
+    private Button backButton;
     private ListView listView;
 
     private ArrayAdapter<String> adapter;
@@ -53,16 +55,14 @@ public class ChooseAreaFragment extends Fragment {
 
     private Province selectedProvince;
     private City selectedCity;
-    private County selectedCounty;
 
     private int currentLevel;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,  ViewGroup container,  Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.choose_area,container,false);
         titleText = (TextView)view.findViewById(R.id.title_text);
-        backbutton = (Button)view.findViewById(R.id.back_button);
+        backButton = (Button)view.findViewById(R.id.back_button);
         listView = (ListView)view.findViewById(R.id.list_view);
         adapter = new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1,dataList);
         listView.setAdapter(adapter);
@@ -70,7 +70,7 @@ public class ChooseAreaFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+    public void onActivityCreated( Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -85,7 +85,7 @@ public class ChooseAreaFragment extends Fragment {
                 }
             }
         });
-        backbutton.setOnClickListener(new View.OnClickListener() {
+        backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (currentLevel == LEVEL_COUNTY){
@@ -95,6 +95,7 @@ public class ChooseAreaFragment extends Fragment {
                 }
             }
         });
+        queryProvinces();
     }
 
     private void queryFromServer(String address,final String type){
@@ -143,7 +144,7 @@ public class ChooseAreaFragment extends Fragment {
 
     private void queryProvinces(){
         titleText.setText("中国");
-        backbutton.setVisibility(View.GONE);
+        backButton.setVisibility(View.GONE);
         provinceList = DataSupport.findAll(Province.class);
         if(provinceList.size() > 0){
             dataList.clear();
@@ -161,8 +162,10 @@ public class ChooseAreaFragment extends Fragment {
 
     private void queryCities(){
         titleText.setText(selectedProvince.getProvinceName());
-        backbutton.setVisibility(View.VISIBLE);
-        cityList = DataSupport.where("province = ?",String.valueOf(selectedProvince.getProvinceName())).find(City.class);
+        backButton.setVisibility(View.VISIBLE);
+        int size =  DataSupport.findAll(City.class).size();
+
+        cityList = DataSupport.where("provinceid = ?",String.valueOf(selectedProvince.getId())).find(City.class);
         if(cityList.size() > 0){
             dataList.clear();
             for(City city : cityList){
@@ -180,8 +183,8 @@ public class ChooseAreaFragment extends Fragment {
 
     private void queryCounties(){
         titleText.setText(selectedCity.getCiteName());
-        backbutton.setVisibility(View.VISIBLE);
-        countyList = DataSupport.where("city = ?",String.valueOf(selectedCity.getCiteName())).find(County.class);
+        backButton.setVisibility(View.VISIBLE);
+        countyList = DataSupport.where("cityid = ?",String.valueOf(selectedCity.getId())).find(County.class);
         if(countyList.size() > 0){
             dataList.clear();
             for(County county : countyList){
